@@ -570,7 +570,7 @@ const enneaQuestionsRepo = {
     "การรักษาสัญญา มาตรฐานงาน และความถูกต้อง คือคุณค่าสูงสุดในการดำรงชีวิตของคุณ",
     "คุณรู้สึกเป็นภาระหน้าที่ที่ต้องคอยแก้ไขสิ่งที่ไม่ถูกต้องรอบตัวให้เข้าที่เข้าทาง",
     "คุณกลัวการกลายเป็นคนชั่วร้าย ผิดพลาด หรือถูกมองว่าเป็นคนไม่มีศีลธรรม",
-    "คุณมักตึงเครียดและยากที่จะผ่อนคลายเพราะรู้สึกว่ายังมีหน้าที่ที่ต้องทำให้ออกมาดีที่สุด",
+    "คุณมักตึงเครียดและยากที่จะผ่อนคลายเพราะรู้สึกว่ายังมีหน้าที่ที่ต้องทำใหอกมาดีที่สุด",
     "คุณให้ความสำคัญกับความถูกต้องตามจริยธรรมและการทำตามมาตรฐานอันดีงาม",
     "คุณมักปรับปรุงและแก้ไขงานรอบตัวอย่างละเอียดเพื่อให้ได้มาตรฐานสมบูรณ์แบบ",
     "ความตรงไปตรงมาและการเคารพกฎเกณฑ์คือคุณธรรมที่คุณยึดถือปฏิบัติอย่างเคร่งครัด"
@@ -746,7 +746,7 @@ const gripStressDb = {
 };
 
 // STATE
-let surveyMode = 'deep'; // 'deep' (200 Qs) or 'fast' (144 Qs)
+let surveyMode = 'deep';
 let questions = [];
 let answers = {};
 let currentIdx = 0;
@@ -920,7 +920,6 @@ function finishSurvey() {
 function renderResults(res) {
   const { funcScores, enneaScores, mbtiCode, coreEnnea, wingEnnea } = res;
 
-  // 1. Basic MBTI & Enneagram Headers
   document.getElementById('mbti-code').innerText = mbtiCode;
   document.getElementById('mbti-title').innerText = getMBTITitle(mbtiCode);
   
@@ -931,17 +930,12 @@ function renderResults(res) {
   document.getElementById('ennea-title').innerText = `ลักษณ์ ${coreEnnea} (ปีก ${wingEnnea})`;
   document.getElementById('ennea-center-desc').innerText = `กลุ่มศูนย์อารมณ์: ${getEnneaCenter(coreEnnea)}`;
 
-  // 2. Render Ranked Function Scores
   renderRankedFunctions(funcScores);
-
-  // 3. Render Mental Wellbeing & Self-Growth Analysis
   renderWellbeingAnalysis(mbtiCode, stack, funcScores);
 
-  // 4. Draw Radars
   drawRadar(document.getElementById('mbti-radar-canvas'), mbtiFuncs, mbtiFuncs.map(f => funcScores[f]), '#3b82f6');
   drawRadar(document.getElementById('ennea-radar-canvas'), enneaTypes.map(t => `T${t}`), enneaTypes.map(t => enneaScores[t]), '#7c3aed');
 
-  // 5. Personality Tensions
   const tensionsContainer = document.getElementById('tensions-container');
   tensionsContainer.innerHTML = '';
   const tensions = detectTensions(mbtiCode, coreEnnea);
@@ -961,7 +955,6 @@ function renderRankedFunctions(scores) {
   const container = document.getElementById('func-rankings-container');
   container.innerHTML = '';
 
-  // Sort functions by score
   const sorted = Object.keys(scores)
     .map(fn => ({ fn, score: scores[fn] }))
     .sort((a,b) => b.score - a.score);
@@ -971,7 +964,6 @@ function renderRankedFunctions(scores) {
 
   sorted.forEach((item, index) => {
     const rawScore = item.score;
-    // Calculate percentage normalized (0 to 100%)
     const pct = Math.max(0, Math.min(100, Math.round(((rawScore - minVal) / (maxVal - minVal)) * 100)));
 
     const row = document.createElement('div');
@@ -992,7 +984,6 @@ function renderWellbeingAnalysis(mbtiCode, stack, funcScores) {
   const container = document.getElementById('wellbeing-container');
   container.innerHTML = '';
 
-  // A. Grip Stress Analysis (based on Inferior Function)
   const gripInfo = gripStressDb[stack.inf] || gripStressDb["Se"];
   const gripCard = document.createElement('div');
   gripCard.className = 'warning-card';
@@ -1003,7 +994,6 @@ function renderWellbeingAnalysis(mbtiCode, stack, funcScores) {
   `;
   container.appendChild(gripCard);
 
-  // B. Cognitive Loop Warning
   const loopCard = document.createElement('div');
   loopCard.className = 'warning-card';
   loopCard.style.background = '#fffbe2';
@@ -1022,7 +1012,6 @@ function renderWellbeingAnalysis(mbtiCode, stack, funcScores) {
   `;
   container.appendChild(loopCard);
 
-  // C. Self-Growth Advice
   const growthCard = document.createElement('div');
   growthCard.className = 'wellbeing-card';
   growthCard.innerHTML = `
@@ -1042,7 +1031,6 @@ function drawRadar(canvas, labels, values, colorHex) {
 
   ctx.clearRect(0,0,w,h);
 
-  // Background Grid
   ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
   for(let r=1; r<=4; r++) {
     ctx.beginPath();
@@ -1055,7 +1043,6 @@ function drawRadar(canvas, labels, values, colorHex) {
     ctx.closePath(); ctx.stroke();
   }
 
-  // Draw Data Polygon
   const maxVal = surveyMode === 'deep' ? 39 : 27;
   const minVal = -maxVal;
   ctx.beginPath();
@@ -1070,7 +1057,6 @@ function drawRadar(canvas, labels, values, colorHex) {
   ctx.fillStyle = colorHex + '40'; ctx.fill();
   ctx.strokeStyle = colorHex; ctx.lineWidth = 2; ctx.stroke();
 
-  // Labels
   ctx.fillStyle = '#334155'; ctx.font = 'bold 11px "Noto Sans Thai"'; ctx.textAlign = 'center';
   for(let i=0; i<numVars; i++) {
     const angle = (Math.PI*2 / numVars) * i - Math.PI/2;
@@ -1117,6 +1103,33 @@ function showView(view) {
   window.scrollTo(0,0);
 }
 
+// CHECK URL HASH FOR SHAREABLE LINK (FIXED)
+function checkUrlHash() {
+  const hash = window.location.hash;
+  if (hash && hash.includes('d=')) {
+    try {
+      const cleanHash = hash.startsWith('#') ? hash.substring(1) : hash;
+      const params = new URLSearchParams(cleanHash);
+      const mode = params.get('m') || 'deep';
+      const dataStr = params.get('d');
+      
+      if (dataStr) {
+        const decodedAnswers = JSON.parse(atob(dataStr));
+        surveyMode = mode;
+        questions = generateQuestions(surveyMode);
+        answers = decodedAnswers;
+        const scores = calculateScores();
+        renderResults(scores);
+        showView(document.getElementById('result-view'));
+        return true;
+      }
+    } catch (e) {
+      console.error("เกิดข้อผิดพลาดในการอ่านค่า URL Hash:", e);
+    }
+  }
+  return false;
+}
+
 // EVENT HANDLERS
 document.getElementById('drawer-toggle').onclick = () => {
   const drawer = document.getElementById('drawer');
@@ -1141,10 +1154,13 @@ document.getElementById('print-btn').onclick = () => window.print();
 
 document.getElementById('retake-btn').onclick = () => {
   localStorage.removeItem('mbti_ennea_draft');
+  window.location.hash = '';
   showView(document.getElementById('intro-view'));
 };
 
 window.onload = () => {
+  if (checkUrlHash()) return;
+
   const draft = localStorage.getItem('mbti_ennea_draft');
   if (draft) document.getElementById('resume-btn').style.display = 'block';
   
@@ -1159,6 +1175,8 @@ window.onload = () => {
     updateQuestionUI();
   };
 };
+
+window.addEventListener('hashchange', checkUrlHash);
 </script>
 </body>
 </html>
